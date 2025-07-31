@@ -1,0 +1,11 @@
+services:
+  onnuri-api:
+    build: .
+    container_name: onnuri
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./database:/app/database
+    environment:
+      - TZ=Asia/Seoul
+    restart: always
