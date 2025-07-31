@@ -1,7 +1,8 @@
 from database.connection import get_connection
+import sqlite3
 
-def create_tables():
-    conn = get_connection()
+def init_tables(db_path: str):
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
     # 회사 테이블
@@ -9,8 +10,14 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS companies (
             company_id TEXT PRIMARY KEY,
             company_name TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO companies (company_id, company_name, is_active)
+        VALUES ('com_0', '공통', 0)
     """)
     
     # 계정과목 테이블
@@ -22,6 +29,11 @@ def create_tables():
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (company_id) REFERENCES companies(company_id)
         )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO categories (category_id, category_name, company_id)
+        VALUES ('cat_0', '미분류', 'com_0')
     """)
     
     # 키워드 테이블
@@ -59,4 +71,4 @@ def create_tables():
     print("Tables created successfully.")
 
 if __name__ == "__main__":
-    create_tables()
+    init_tables("database/onnuri.db")

@@ -55,13 +55,12 @@ class AccountServices:
                 description = transaction.get("적요", "")
 
                 company_id, category_id = self._classify_transaction(cursor, description)
-                is_classified = 1 if company_id and category_id else 0
                 cursor.execute("""
                     insert into transactions (
-                        transaction_date, deposit_amount, withdrawal_amount, balance, branch, description, company_id, category_id, is_classified
-                    ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        transaction_date, deposit_amount, withdrawal_amount, balance, branch, description, company_id, category_id
+                    ) values (?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
-                        transaction_date, deposit, withdrawal, balance, branch, description, company_id, category_id, is_classified
+                        transaction_date, deposit, withdrawal, balance, branch, description, company_id, category_id
                 ))
 
         except Exception as e:
@@ -81,7 +80,68 @@ class AccountServices:
         if result:
             return result['company_id'], result['category_id']
         else:
-            return None, None
+            try:
+                cursor.execute("""
+                        select c.company_id, c.category_id
+                        from categories c
+                        where c.category_name = '미분류'
+                        order by c.company_id
+                        limit 1
+                    """)
+                result = cursor.fetchone()
+                return result['company_id'], result['category_id']
+            except Exception as e:
+                raise Exception(f"미분류 계정과목 조회 오류: {str(e)}")
 
-    def get_transaction_by_company_id(self, company_id: str):
-        return "complete"
+    def get_transaction_by_company_id(self, companyId: str):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                select c.category_id as 'categoryID',
+                    c.category_name as 'categoryName',
+                    t.description as 'description',
+                    t.deposit_amount as 'depositAmount',
+                    t.withdrawal_amount as 'withdrawalAmount',
+                    t.balance as 'balance',
+                    t.branch as 'branch',
+                    t.transaction_date as 'transactionDate'
+                from transactions t
+                join categories c on t.category_id = c.category_id
+                join companies co on t.company_id = co.company_id
+                where t.company_id = ? and co.is_active = 1
+                order by t.transaction_date desc
+            """, (companyId,))
+
+            results = cursor.fetchall()
+            return [dict(row) for row in results]
+        except Exception as e:
+            raise Exception(f"거래 내역 조회 오류: {str(e)}")
+        finally:
+            conn.close()
+
+    def get_transaction_missing(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                select t.description as 'description',
+                    t.deposit_amount as 'depositAmount',
+                    t.withdrawal_amount as 'withdrawalAmount',
+                    t.balance as 'balance',
+                    t.branch as 'branch',
+                    t.transaction_date as 'transactionDate'
+                from transactions t
+                join companies c on t.company_id = c.company_id
+                where c.is_active = 0
+                order by t.transaction_date desc
+            """)
+
+            results = cursor.fetchall()
+            return [dict(row) for row in results]
+        except Exception as e:
+            raise Exception(f"거래 내역 조회 오류: {str(e)}")
+        finally:
+            conn.close()
