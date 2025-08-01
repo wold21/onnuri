@@ -3,8 +3,8 @@
 1. Docker와 Docker compose가 설치된 PC에 소스를 다운 받는다.
 2. 터미널로 해당 소스 위치로 이동한다.
 3. 프로젝트 루트에서 다음과 같은 명령어를 입력한다.
-   - `docker-compose up --build`
-4. 브라우저 주소창에 `127.0.0.1:8000/docs`를 입력하여 스웨거에 접근한다.
+   - `docker-compose up -d --build` 또는 `docker-compose up --build`
+4. 브라우저 주소창에 `127.0.0.1:8000/docs`를 입력하여 스웨거UI에 접근한다.
 5. 과제에 명시된 POST, GET API를 테스트 한다.
    - <i>과제 항목 외로 미분류 항목 조회 API를 추가하였습니다.</i>
 
