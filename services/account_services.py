@@ -99,6 +99,14 @@ class AccountServices:
 
         try:
             cursor.execute("""
+                select * from companies where company_id = ? and is_active = 1
+            """, (companyId,))
+            
+            company = cursor.fetchone()
+            if not company:
+                raise Exception(f"해당 회사가 존재하지 않습니다.")
+
+            cursor.execute("""
                 select c.category_id as 'categoryID',
                     c.category_name as 'categoryName',
                     t.description as 'description',
@@ -115,7 +123,7 @@ class AccountServices:
             """, (companyId,))
 
             results = cursor.fetchall()
-            return [dict(row) for row in results]
+            return list(map(dict, results))
         except Exception as e:
             raise Exception(f"거래 내역 조회 오류: {str(e)}")
         finally:

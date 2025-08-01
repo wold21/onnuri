@@ -49,7 +49,7 @@ async def get_accounting_records(companyId: str):
         result = account_services.get_transaction_by_company_id(companyId)
         return success_response(data=result)
     except Exception as e:
-        raise error_response(500, f"거래 내역 조회 중 오류가 발생했습니다: {str(e)}")
+        raise error_response(500, f"{str(e)}")
     
 @router.get("/records/missing")
 async def get_accounting_records():
@@ -58,4 +58,4 @@ async def get_accounting_records():
         result = account_services.get_transaction_missing()
         return success_response(data=result)
     except Exception as e:
-        raise error_response(500, f"거래 내역 조회 중 오류가 발생했습니다: {str(e)}")
+        raise error_response(500, f"{str(e)}")
